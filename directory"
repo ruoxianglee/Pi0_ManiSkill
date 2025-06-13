@@ -1,0 +1,35 @@
+[33mcommit e24857a82f7ca9a8d9009472286469c7afb3a0a7[m[33m ([m[1;36mHEAD -> [m[1;32mmain[m[33m)[m
+Author: ruoxianglee <ruoxiang.li@my.cityu.edu.hk>
+Date:   Sat Jun 14 06:57:19 2025 +0800
+
+    Stop tracking demos directory
+
+[33mcommit 1ad566336cd59b3a7e0c1d93b2732f2d03123b91[m
+Author: ruoxianglee <ruoxiang.li@my.cityu.edu.hk>
+Date:   Sat Jun 14 06:48:38 2025 +0800
+
+    update dataset
+
+[33mcommit e1fceb1472ddb3660050d3cbcec21decf0eec977[m
+Author: ruoxianglee <ruoxiang.li@my.cityu.edu.hk>
+Date:   Sat Jun 14 06:46:28 2025 +0800
+
+    update datset
+
+[33mcommit 98ae6d1de532b824c562fc00e20cf7b8a802c9e3[m[33m ([m[1;31morigin/main[m[33m)[m
+Author: ruoxianglee <ruoxiang.li@my.cityu.edu.hk>
+Date:   Sat Jun 14 02:45:09 2025 +0800
+
+    update maniskill data to lerobot
+
+[33mcommit 06d98caf0ed5755a3c07b73d0eced9555cbb3a67[m
+Author: ruoxianglee <ruoxiang.li@my.cityu.edu.hk>
+Date:   Fri Jun 13 17:28:28 2025 +0800
+
+    update openai
+
+[33mcommit 2892898f976c0b9a855a8a7536fb778f93ede674[m
+Author: ruoxianglee <ruoxiang.li@my.cityu.edu.hk>
+Date:   Thu Jun 12 14:56:23 2025 +0800
+
+    first commit
