@@ -350,7 +350,7 @@ class LeRobotManiSkillDataConfig(DataConfigFactory):
                         "observation/image": "image",
                         "observation/wrist_image": "wrist_image",
                         "observation/state": "state",
-                        "actions": "action",
+                        "actions": "actions",
                         "prompt": "prompt",
                     }
                 )
@@ -572,7 +572,7 @@ _CONFIGS = [
         # dataset. For your own dataset, you can change the repo_id to point to your dataset.
         # Also modify the DataConfig to use the new config you made for your dataset above.
         data=LeRobotManiSkillDataConfig(
-            repo_id="Ruoxiang/maniskill_dataset",
+            repo_id="Ruoxiang/maniskill_pi0",
             assets=AssetsConfig(
                 assets_dir="s3://openpi-assets/checkpoints/pi0_base/assets",
                 asset_id="franka",
