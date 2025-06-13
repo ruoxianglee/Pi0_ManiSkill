@@ -340,6 +340,9 @@ class LeRobotManiSkillDataConfig(DataConfigFactory):
         # For your own dataset, first figure out what keys your environment passes to the policy server
         # and then modify the mappings below so your dataset's keys get matched to those target keys.
         # The repack transform simply remaps key names here.
+
+        # Keys: image, wrist_image, state, action, prompt -> dataset format in 'convert_maniskill_data_to_lerobot.py'
+        # Keys: observation/image, observation/wrist_image, observation/state, action, prompt -> inference input
         repack_transform = _transforms.Group(
             inputs=[
                 _transforms.RepackTransform(
@@ -545,16 +548,16 @@ _CONFIGS = [
     #
     # Inference Maniskill configs.
     #
-    TrainConfig(
-        name="pi0_maniskill",
-        model=pi0.Pi0Config(action_dim=7, action_horizon=10),
-        data=LeRobotManiSkillDataConfig(
-            assets=AssetsConfig(asset_id="franka"),
-            base_config=DataConfig(
-                prompt_from_task=True,
-            ),
-        ),
-    ),
+    # TrainConfig(
+    #     name="pi0_maniskill",
+    #     model=pi0.Pi0Config(action_dim=7, action_horizon=10),
+    #     data=LeRobotManiSkillDataConfig(
+    #         assets=AssetsConfig(asset_id="franka"),
+    #         base_config=DataConfig(
+    #             prompt_from_task=True,
+    #         ),
+    #     ),
+    # ),
     #
     # Fine-tuning Maniskill configs.
     #
