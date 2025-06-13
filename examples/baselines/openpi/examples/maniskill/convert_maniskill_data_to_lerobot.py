@@ -92,45 +92,42 @@ def load_h5_data(data):
     return out
 
 def load_raw_episode_data(
-    ep_path: Path,
-    json_path: Path,
+    h5_file: Path,
+    json_file: Path,
+    episode_id: int,
 ) -> tuple[dict[str, np.ndarray], torch.Tensor, torch.Tensor]:
     """Load data from a ManiSkill trajectory file.
     
     Args:
-        ep_path: Path to the hdf5 trajectory file
-        json_path: Path to the corresponding JSON metadata file
+        h5_file: Path to the hdf5 trajectory file
+        json_file: Path to the corresponding JSON metadata file
+        episode_id: ID of the episode to load
     """
-    with h5py.File(ep_path, "r") as ep:
-        # Load JSON metadata
-        with open(json_path, "r") as f:
-            json_data = json.load(f)
-        
-        # Get trajectory key (should be traj_0, traj_1, etc.)
-        traj_key = list(ep.keys())[0]
-        trajectory = load_h5_data(ep[traj_key])
+    with h5py.File(h5_file, "r") as h5_data:
+        # Get trajectory key
+        traj_key = f"traj_{episode_id}"
+        if traj_key not in h5_data:
+            raise ValueError(f"Trajectory {traj_key} not found in {h5_file}")
+            
+        trajectory = load_h5_data(h5_data[traj_key])
         traj_len = len(trajectory["actions"])
 
+        # Process observations
         # exclude the final observation as most learning workflows do not use it
         obs = common.index_dict_array(trajectory["obs"], slice(traj_len))
-        # if eps_id == 0:
-        #     self.obs = obs
-        # else:
-        #     self.obs = common.append_dict_array(self.obs, obs)
-
-        # Load state data - ensure arrays are 2D before concatenation
-        tcp_pose = trajectory["obs"]["extra"]["tcp_pose"]  # shape: (T, 7)
-        qpos = trajectory["obs"]["agent"]["qpos"]  # shape: (T, 9)
+        
+        # Load state data
+        tcp_pose = obs["extra"]["tcp_pose"]  # shape: (T, 7)
+        qpos = obs["agent"]["qpos"]  # shape: (T, 9)
         
         # Concatenate along the feature dimension (axis=1)
         state = torch.from_numpy(np.concatenate([tcp_pose, qpos], axis=1))  # shape: (T, 16)
-        
         action = torch.from_numpy(trajectory["actions"])
 
         imgs_per_cam = {}
         for camera in ["base_camera", "hand_camera"]:
-            if camera in trajectory["obs"]["sensor_data"]:
-                img_data = trajectory["obs"]["sensor_data"][camera]["rgb"] # 128*128*3
+            if camera in obs["sensor_data"]:
+                img_data = obs["sensor_data"][camera]["rgb"] # 128*128*3
                 if img_data.ndim == 4:  # Uncompressed
                     imgs_per_cam[camera] = img_data
                 else:  # Compressed
@@ -148,39 +145,69 @@ def populate_dataset(
     hdf5_files: list[Path],
     task: str,
 ) -> LeRobotDataset:
-    json_data = load_json(json_path)
-    episodes = json_data["episodes"]
+    for h5_file in tqdm.tqdm(hdf5_files):
+        # Load JSON metadata
+        json_file = h5_file.with_suffix(".json")
+        if not json_file.exists():
+            print(f"Warning: No corresponding JSON file found for {h5_file}")
+            continue
+            
+        with open(json_file, "r") as f:
+            json_data = json.load(f)
+        
+        # Get episodes from JSON
+        episodes = json_data.get("episodes", [])
+        if not episodes:
+            print(f"Warning: No episodes found in {json_file}")
+            continue
 
-    for ep_idx in tqdm.tqdm(episodes):
-        ep_path = hdf5_files[ep_idx]
-        json_path = ep_path.with_suffix(".json")
+        # Load instructions if available
+        dir_path = os.path.dirname(h5_file)
+        instr_json_path = os.path.join(dir_path, "instructions.json")
+        instruction = task  # Default to provided task
+        if os.path.exists(instr_json_path):
+            try:
+                with open(instr_json_path, 'r') as f_instr:
+                    instruction_dict = json.load(f_instr)
+                    instructions = instruction_dict.get('instructions', [])
+                    if instructions:
+                        instruction = np.random.choice(instructions)
+            except Exception as e:
+                print(f"Warning: Failed to load instructions from {instr_json_path}: {str(e)}")
 
-        imgs_per_cam, state, action = load_raw_episode_data(ep_path, json_path)
-        num_frames = state.shape[0]
+        # Process each episode
+        for episode in episodes:
+            try:
+                episode_id = episode["episode_id"]
+                imgs_per_cam, state, action = load_raw_episode_data(h5_file, json_file, episode_id)
+                num_frames = state.shape[0]
 
-        for i in range(num_frames):
-            frame = {
-                "state": state[i],
-                "action": action[i],
-            }
+                for i in range(num_frames):
+                    frame = {
+                        "state": state[i],
+                        "action": action[i],
+                    }
 
-            # Add images if available
-            for camera, img_array in imgs_per_cam.items():
-                if camera == "base_camera":
-                    frame["image"] = img_array[i]
-                elif camera == "hand_camera":
-                    frame["wrist_image"] = img_array[i]
+                    # Add images if available
+                    for camera, img_array in imgs_per_cam.items():
+                        if camera == "base_camera":
+                            frame["image"] = img_array[i]
+                        elif camera == "hand_camera":
+                            frame["wrist_image"] = img_array[i]
 
-            dataset.add_frame(frame)
+                    dataset.add_frame(frame)
 
-        dataset.save_episode(task=task)
+                dataset.save_episode(task=instruction)
+            except Exception as e:
+                print(f"Error processing episode {episode_id} in {h5_file}: {str(e)}")
+                continue
 
     return dataset
 
 
 def port_maniskill(
     data_dir: Path,
-    repo_id: str = "Ruoxiang/maniskill_dataset",
+    repo_id: str = "Ruoxiang/maniskill_pi0",
     raw_repo_id: str | None = None,
     task: str = "DEBUG",
     *,
@@ -202,11 +229,18 @@ def port_maniskill(
         shutil.rmtree(LEROBOT_HOME / repo_id)
 
     # Find all hdf5 files
-    hdf5_files = sorted(data_dir.glob("trajectory_cpu.rgb*.h5"))  # Updated to match ManiSkill naming convention
+    # hdf5_files = []
+    # for root, dirs, _ in os.walk(data_dir):
+    #     for dir_name in dirs:
+    #         for _, _, files in os.walk(os.path.join(root, dir_name)):
+    #             for filename in fnmatch.filter(files, 'trajectory_cpu.rgb*.h5'):
+    #                 file_path = os.path.join(root, dir_name, "motionplanning", filename)
+    #                 hdf5_files.append(file_path)
+    hdf5_files = sorted(data_dir.glob("**/motionplanning/trajectory_cpu.rgb*.h5"))
     if not hdf5_files:
         raise ValueError(f"No trajectory h5 files found in {data_dir}")
 
-    print(f"Found {len(hdf5_files)} trajectory files")
+    print(f"Found {len(hdf5_files)} trajectory files for {len(hdf5_files)} tasks")
 
     # Create and populate dataset
     dataset = create_empty_dataset(
