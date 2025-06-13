@@ -351,7 +351,7 @@ class LeRobotManiSkillDataConfig(DataConfigFactory):
                         "observation/image": "image",
                         "observation/wrist_image": "wrist_image",
                         "observation/state": "state",
-                        "actions": "actions",
+                        "action": "action",
                         "prompt": "prompt",
                     }
                 )
@@ -397,6 +397,7 @@ class LeRobotManiSkillDataConfig(DataConfigFactory):
             repack_transforms=repack_transform,
             data_transforms=data_transforms,
             model_transforms=model_transforms,
+            action_sequence_keys=("action",),
         )
 
 @dataclasses.dataclass(frozen=True)
