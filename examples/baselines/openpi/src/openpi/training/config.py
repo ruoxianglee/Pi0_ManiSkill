@@ -351,7 +351,7 @@ class LeRobotManiSkillDataConfig(DataConfigFactory):
                         "observation/image": "image",
                         "observation/wrist_image": "wrist_image",
                         "observation/state": "state",
-                        "action": "actions",
+                        "actions": "actions",
                         "prompt": "prompt",
                     }
                 )
