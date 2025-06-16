@@ -342,7 +342,7 @@ class LeRobotManiSkillDataConfig(DataConfigFactory):
         # and then modify the mappings below so your dataset's keys get matched to those target keys.
         # The repack transform simply remaps key names here.
 
-        # Keys: image, wrist_image, state, action, prompt -> dataset format in 'convert_maniskill_data_to_lerobot.py'
+        # Keys: image, wrist_image, state, actions, prompt -> dataset format in 'convert_maniskill_data_to_lerobot.py'
         # Keys: observation/image, observation/wrist_image, observation/state, action, prompt -> inference input
         repack_transform = _transforms.Group(
             inputs=[
@@ -351,7 +351,7 @@ class LeRobotManiSkillDataConfig(DataConfigFactory):
                         "observation/image": "image",
                         "observation/wrist_image": "wrist_image",
                         "observation/state": "state",
-                        "action": "action",
+                        "action": "actions",
                         "prompt": "prompt",
                     }
                 )
@@ -397,7 +397,7 @@ class LeRobotManiSkillDataConfig(DataConfigFactory):
             repack_transforms=repack_transform,
             data_transforms=data_transforms,
             model_transforms=model_transforms,
-            action_sequence_keys=("action",),
+            action_sequence_keys=("actions",),
         )
 
 @dataclasses.dataclass(frozen=True)
