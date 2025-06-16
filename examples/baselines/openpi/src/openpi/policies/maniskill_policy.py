@@ -75,10 +75,10 @@ class ManiSkillInputs(transforms.DataTransformFn):
 
         # Pad actions to the model action dimension. Keep this for your own dataset.
         # Actions are only available during training.
-        if "action" in data:
+        if "actions" in data:
             # We are padding to the model action dim.
             # For pi0-FAST, this is a no-op (since action_dim = 7).
-            actions = transforms.pad_to_dim(data["action"], self.action_dim)
+            actions = transforms.pad_to_dim(data["actions"], self.action_dim)
             inputs["actions"] = actions
 
         # Pass the prompt (aka language instruction) to the model.
@@ -104,4 +104,4 @@ class ManiSkillOutputs(transforms.DataTransformFn):
         # dimension, we need to now parse out the correct number of actions in the return dict.
         # For Libero, we only return the first 7 actions (since the rest is padding).
         # For your own dataset, replace `7` with the action dimension of your dataset.
-        return {"action": np.asarray(data["actions"][:, :7])}
+        return {"actions": np.asarray(data["actions"][:, :7])}

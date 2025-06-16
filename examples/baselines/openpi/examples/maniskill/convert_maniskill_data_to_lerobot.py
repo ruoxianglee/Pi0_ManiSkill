@@ -59,7 +59,7 @@ def create_empty_dataset(
             "shape": (16,),
             "names": ["state"],
         },
-        "action": {
+        "actions": {
             "dtype": "float32",
             "shape": (7,),
             "names": ["actions"],
@@ -185,7 +185,7 @@ def populate_dataset(
                 for i in range(num_frames):
                     frame = {
                         "state": state[i],
-                        "action": action[i],
+                        "actions": action[i],
                     }
 
                     # Add images if available
