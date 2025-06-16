@@ -295,9 +295,9 @@ def eval_maniskill(args: Args) -> None:
                     # Finished executing previous action chunk -- compute new chunk
                     # Prepare observations dict
                     element = {
-                        "observation/image": img, # shape: (224, 224, 3)
-                        "observation/wrist_image": wrist_img, # shape: (224, 224, 3)
-                        "observation/state": obs["state"], # shape: (16,)
+                        "image": img, # shape: (224, 224, 3)
+                        "wrist_image": wrist_img, # shape: (224, 224, 3)
+                        "state": obs["state"], # shape: (16,)
                         "prompt": str(task_description),
                     }
 

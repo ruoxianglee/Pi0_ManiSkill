@@ -348,9 +348,9 @@ class LeRobotManiSkillDataConfig(DataConfigFactory):
             inputs=[
                 _transforms.RepackTransform(
                     {
-                        "observation/image": "image",
-                        "observation/wrist_image": "wrist_image",
-                        "observation/state": "state",
+                        "image": "image",
+                        "wrist_image": "wrist_image",
+                        "state": "state",
                         "actions": "actions",
                         "prompt": "prompt",
                     }

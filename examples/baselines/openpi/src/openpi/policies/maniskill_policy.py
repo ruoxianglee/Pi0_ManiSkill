@@ -10,9 +10,9 @@ from openpi.models import model as _model
 def make_maniskill_example() -> dict:
     """Creates a random input example for the Maniskill policy."""
     return {
-        "observation/state": np.random.rand(16),
-        "observation/image": np.random.randint(256, size=(224, 224, 3), dtype=np.uint8),
-        "observation/wrist_image": np.random.randint(256, size=(224, 224, 3), dtype=np.uint8),
+        "state": np.random.rand(16),
+        "image": np.random.randint(256, size=(224, 224, 3), dtype=np.uint8),
+        "wrist_image": np.random.randint(256, size=(224, 224, 3), dtype=np.uint8),
         "prompt": "do something",
     }
 
@@ -42,7 +42,7 @@ class ManiSkillInputs(transforms.DataTransformFn):
         # since the pi0-FAST action_dim = 7, which is < state_dim = 8, so pad is skipped.
         # Keep this for your own dataset, but if your dataset stores the proprioceptive input
         # in a different key than "observation/state", you should change it below.
-        state = transforms.pad_to_dim(data["observation/state"], self.action_dim)
+        state = transforms.pad_to_dim(data["state"], self.action_dim)
 
         # Possibly need to parse images to uint8 (H,W,C) since LeRobot automatically
         # stores as float32 (C,H,W), gets skipped for policy inference.
@@ -53,8 +53,8 @@ class ManiSkillInputs(transforms.DataTransformFn):
         # and two wrist views (left and right). If your dataset does not have a particular type
         # of image, e.g. wrist images, you can comment it out here and replace it with zeros like we do for the
         # right wrist image below.
-        base_image = data["observation/image"]
-        wrist_image = data["observation/wrist_image"]
+        base_image = data["image"]
+        wrist_image = data["wrist_image"]
 
         # Create inputs dict. Do not change the keys in the dict below.
         inputs = {
