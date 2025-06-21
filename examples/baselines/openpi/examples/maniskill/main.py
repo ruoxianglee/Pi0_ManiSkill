@@ -123,9 +123,27 @@ class FlattenRGBDObservationWrapper(gym.ObservationWrapper):
                                 )
                             )
         if self.include_rgb and not self.include_depth:
+            # Debug: Print original images shapes
+            print(f"Debug - images list length: {len(images)}")
+            for i, img in enumerate(images):
+                print(f"Debug - images[{i}] shape: {img.shape}, dtype: {img.dtype}")
+            
             # images has shape (2, 1, 128, 128, 3)
-            ret["base_img"] = images[0][0] # shape: (128, 128, 3)
-            ret["wrist_img"] = images[1][0] # shape: (128, 128, 3)
+            base_img = images[0][0] # shape: (128, 128, 3)
+            wrist_img = images[1][0] # shape: (128, 128, 3)
+            
+            # Debug: Print extracted image shapes
+            print(f"Debug - base_img shape: {base_img.shape}, dtype: {base_img.dtype}")
+            print(f"Debug - wrist_img shape: {wrist_img.shape}, dtype: {wrist_img.dtype}")
+            
+            # Check if images have correct dimensions
+            if base_img.shape != (128, 128, 3):
+                print(f"Warning: base_img has unexpected shape {base_img.shape}, expected (128, 128, 3)")
+            if wrist_img.shape != (128, 128, 3):
+                print(f"Warning: wrist_img has unexpected shape {wrist_img.shape}, expected (128, 128, 3)")
+            
+            ret["base_img"] = base_img
+            ret["wrist_img"] = wrist_img
 
         return ret
 
@@ -277,12 +295,21 @@ def eval_maniskill(args: Args) -> None:
                 # IMPORTANT: rotate 180 degrees to match train preprocessing
                 img = np.ascontiguousarray(obs["base_img"][::-1, ::-1])
                 wrist_img = np.ascontiguousarray(obs["wrist_img"][::-1, ::-1])
+                
+                # Debug: Print image shapes and types
+                print(f"Debug - img shape: {img.shape}, dtype: {img.dtype}")
+                print(f"Debug - wrist_img shape: {wrist_img.shape}, dtype: {wrist_img.dtype}")
+                
                 img = image_tools.convert_to_uint8(
                     image_tools.resize_with_pad(img, args.resize_size, args.resize_size)
                 )
                 wrist_img = image_tools.convert_to_uint8(
                     image_tools.resize_with_pad(wrist_img, args.resize_size, args.resize_size)
                 )
+                
+                # Debug: Print processed image shapes
+                print(f"Debug - processed img shape: {img.shape}, dtype: {img.dtype}")
+                print(f"Debug - processed wrist_img shape: {wrist_img.shape}, dtype: {wrist_img.dtype}")
 
                 # Save preprocessed image for replay video
                 replay_images.append(img)
