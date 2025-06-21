@@ -1,5 +1,6 @@
 import numpy as np
 from PIL import Image
+import torch
 
 
 def convert_to_uint8(img: np.ndarray) -> np.ndarray:
@@ -24,6 +25,10 @@ def resize_with_pad(images: np.ndarray, height: int, width: int, method=Image.BI
     Returns:
         The resized images in [..., height, width, channel].
     """
+    # Convert torch.Tensor to numpy if needed
+    if isinstance(images, torch.Tensor):
+        images = images.cpu().numpy()
+    
     # If the images are already the correct size, return them as is.
     if images.shape[-3:-1] == (height, width):
         return images
