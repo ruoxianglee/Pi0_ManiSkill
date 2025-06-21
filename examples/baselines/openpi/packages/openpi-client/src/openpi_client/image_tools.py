@@ -29,6 +29,16 @@ def resize_with_pad(images: np.ndarray, height: int, width: int, method=Image.BI
     if isinstance(images, torch.Tensor):
         images = images.cpu().numpy()
     
+    # Debug: Print image shape and type
+    print(f"DEBUG: resize_with_pad input shape: {images.shape}, dtype: {images.dtype}")
+    
+    # Check if the image has the expected format
+    if len(images.shape) < 3:
+        raise ValueError(f"Image must have at least 3 dimensions (height, width, channels), got shape: {images.shape}")
+    
+    if images.shape[-1] not in [1, 3, 4]:  # grayscale, RGB, or RGBA
+        raise ValueError(f"Image must have 1, 3, or 4 channels in the last dimension, got shape: {images.shape}")
+    
     # If the images are already the correct size, return them as is.
     if images.shape[-3:-1] == (height, width):
         return images

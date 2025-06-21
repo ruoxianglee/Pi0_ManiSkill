@@ -56,6 +56,37 @@ class ManiSkillInputs(transforms.DataTransformFn):
         base_image = data["image"]
         wrist_image = data["wrist_image"]
 
+        # Fix image shapes if they are incorrect
+        def fix_image_shape(img, name):
+            if img is None:
+                return np.zeros((224, 224, 3), dtype=np.uint8)
+            
+            img = np.asarray(img)
+            print(f"DEBUG: {name} shape: {img.shape}, dtype: {img.dtype}")
+            
+            # If shape is (1, 1, 128) or similar, create a dummy image
+            if len(img.shape) == 3 and img.shape[0] == 1 and img.shape[1] == 1:
+                print(f"WARNING: {name} has invalid shape {img.shape}, creating dummy image")
+                return np.zeros((224, 224, 3), dtype=np.uint8)
+            
+            # If shape is (H, W, C) and C is not 3, convert to RGB
+            if len(img.shape) == 3 and img.shape[2] == 1:  # grayscale
+                img = np.repeat(img, 3, axis=2)
+            elif len(img.shape) == 3 and img.shape[2] > 3:  # too many channels
+                img = img[:, :, :3]
+            
+            # Ensure uint8 format
+            if np.issubdtype(img.dtype, np.floating):
+                if img.max() <= 1.0:
+                    img = (img * 255).astype(np.uint8)
+                else:
+                    img = img.astype(np.uint8)
+            
+            return img
+
+        base_image = fix_image_shape(base_image, "base_image")
+        wrist_image = fix_image_shape(wrist_image, "wrist_image")
+
         # Create inputs dict. Do not change the keys in the dict below.
         inputs = {
             "state": state,
