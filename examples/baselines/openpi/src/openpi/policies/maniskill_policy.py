@@ -38,13 +38,9 @@ class ManiSkillInputs(transforms.DataTransformFn):
         mask_padding = self.model_type == _model.ModelType.PI0
 
         # We pad the proprioceptive input to the action dimension of the model.
-        # For pi0-FAST, we don't pad the state. For Libero, we don't need to differentiate
-        # since the pi0-FAST action_dim = 7, which is < state_dim = 8, so pad is skipped.
-        # Keep this for your own dataset, but if your dataset stores the proprioceptive input
-        # in a different key than "observation/state", you should change it below.
-        print(f"Original state shape: {data['state'].shape}, action_dim: {self.action_dim}")
+        # data["state"] is a 16-dim vector
+        # action_dim is 32
         state = transforms.pad_to_dim(data["state"], self.action_dim)
-        print(f"After pad_to_dim state shape: {state.shape}")
 
         # Possibly need to parse images to uint8 (H,W,C) since LeRobot automatically
         # stores as float32 (C,H,W), gets skipped for policy inference.
@@ -64,11 +60,9 @@ class ManiSkillInputs(transforms.DataTransformFn):
             # Convert from [channel, height, width] to [height, width, channel].
             return einops.rearrange(img, "c h w -> h w c")
         
-        base_image = convert_image(data["image"])
-        wrist_image = convert_image(data["wrist_image"])
+        base_image = convert_image(data["image"]) # 128, 128, 3
+        wrist_image = convert_image(data["wrist_image"]) # 128, 128, 3
 
-        print(base_image.shape)
-        print(wrist_image.shape)
         # Create inputs dict. Do not change the keys in the dict below.
         inputs = {
             "state": state,
