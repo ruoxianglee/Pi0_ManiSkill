@@ -58,7 +58,7 @@ class Args:
     prompt: str = 'pick up a red cube and stack it on top of a green cube and let go of the cube without it falling'
     """Change the environments' max_episode_steps to this value. Sometimes necessary if the demonstrations being imitated are too short. Typically the default
     max episode steps of environments in ManiSkill are tuned lower so reinforcement learning agents can learn faster."""
-    max_episode_steps: int = 100
+    max_episode_steps: int = 150
 
     #################################################################################################################
     # ManiSkill environment-specific parameters
@@ -74,7 +74,7 @@ class Args:
     """whether to capture videos of the agent performances (check out `videos` folder)"""
     capture_video: bool = True
     """Path to save videos"""
-    video_out_path: str = "data/libero/videos"
+    video_out_path: str = "/videos"
     """the number of parallel environments to evaluate the agent on"""
     num_eval_envs: int = 1
     """the simulation backend to use for evaluation environments. can be "cpu" or "gpu"""
@@ -218,8 +218,6 @@ def eval_maniskill(args: Args) -> None:
     torch.manual_seed(args.seed)
     torch.backends.cudnn.deterministic = args.torch_deterministic
 
-    _saved_images = False
-
     device = torch.device("cuda" if torch.cuda.is_available() and args.cuda else "cpu")
 
     env_kwargs = dict(
@@ -249,7 +247,9 @@ def eval_maniskill(args: Args) -> None:
     # Pi0 Policy
     #################################################################################################################
     config = _config.get_config("pi0_maniskill")
-    checkpoint_dir = download.maybe_download("s3://openpi-assets/checkpoints/pi0_maniskill")
+
+    current_root = os.getcwd()
+    checkpoint_dir = os.path.join(current_root, "checkpoints/pi0_maniskill/pi0_maniskill_stackcube")
 
     # Create a trained policy.
     policy = _policy_config.create_trained_policy(config, checkpoint_dir, default_prompt=args.prompt)
@@ -283,11 +283,6 @@ def eval_maniskill(args: Args) -> None:
                 wrist_img = image_tools.convert_to_uint8(
                     image_tools.resize_with_pad(wrist_img, args.resize_size, args.resize_size)
                 )
-
-                if not _saved_images:
-                    imageio.imwrite("data/libero/images/base_img_244.png", img)
-                    imageio.imwrite("data/libero/images/wrist_img_244.png", wrist_img)
-                    _saved_images = True
 
                 # Save preprocessed image for replay video
                 replay_images.append(img)
