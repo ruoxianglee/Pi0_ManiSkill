@@ -249,7 +249,7 @@ def eval_maniskill(args: Args) -> None:
     config = _config.get_config("pi0_maniskill")
 
     current_root = os.getcwd()
-    checkpoint_dir = os.path.join(current_root, "../..", "checkpoints/pi0_maniskill/pi0_maniskill_stackcube")
+    checkpoint_dir = os.path.join(current_root, "../..", "checkpoints/pi0_maniskill/pi0_maniskill_stackcube/1000")
 
     # Create a trained policy.
     policy = _policy_config.create_trained_policy(config, checkpoint_dir, default_prompt=args.prompt)
