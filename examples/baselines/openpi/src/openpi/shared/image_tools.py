@@ -4,6 +4,8 @@ import jax
 import jax.numpy as jnp
 
 import openpi.shared.array_typing as at
+import numpy as np
+import torch
 
 
 @functools.partial(jax.jit, static_argnums=(1, 2, 3))
@@ -17,8 +19,11 @@ def resize_with_pad(
     """Replicates tf.image.resize_with_pad. Resizes an image to a target height and width without distortion
     by padding with black. If the image is float32, it must be in the range [-1, 1].
     """
-    has_batch_dim = images.ndim == 4
-    if not has_batch_dim:
+    if isinstance(images, torch.Tensor):
+        images = images.cpu().numpy()
+    elif isinstance(images, (list, tuple)):
+        images = [im.cpu().numpy() if isinstance(im, torch.Tensor) else im for im in images]
+    else:
         images = images[None]  # type: ignore
     cur_height, cur_width = images.shape[1:3]
     ratio = max(cur_width / width, cur_height / height)
@@ -45,6 +50,8 @@ def resize_with_pad(
         constant_values=0 if images.dtype == jnp.uint8 else -1.0,
     )
 
-    if not has_batch_dim:
+    if isinstance(images, (list, tuple)):
+        padded_images = [padded_images[i] for i in range(len(images))]
+    elif isinstance(images, torch.Tensor):
         padded_images = padded_images[0]
     return padded_images
