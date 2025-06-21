@@ -74,7 +74,7 @@ class Args:
     """whether to capture videos of the agent performances (check out `videos` folder)"""
     capture_video: bool = True
     """Path to save videos"""
-    video_out_path: str = "/videos"
+    video_out_path: str = "./videos"
     """the number of parallel environments to evaluate the agent on"""
     num_eval_envs: int = 1
     """the simulation backend to use for evaluation environments. can be "cpu" or "gpu"""
