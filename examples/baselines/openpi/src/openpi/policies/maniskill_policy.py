@@ -42,7 +42,9 @@ class ManiSkillInputs(transforms.DataTransformFn):
         # since the pi0-FAST action_dim = 7, which is < state_dim = 8, so pad is skipped.
         # Keep this for your own dataset, but if your dataset stores the proprioceptive input
         # in a different key than "observation/state", you should change it below.
+        print(f"Original state shape: {data['state'].shape}, action_dim: {self.action_dim}")
         state = transforms.pad_to_dim(data["state"], self.action_dim)
+        print(f"After pad_to_dim state shape: {state.shape}")
 
         # Possibly need to parse images to uint8 (H,W,C) since LeRobot automatically
         # stores as float32 (C,H,W), gets skipped for policy inference.
@@ -65,6 +67,8 @@ class ManiSkillInputs(transforms.DataTransformFn):
         base_image = convert_image(data["image"])
         wrist_image = convert_image(data["wrist_image"])
 
+        print(base_image.shape)
+        print(wrist_image.shape)
         # Create inputs dict. Do not change the keys in the dict below.
         inputs = {
             "state": state,
