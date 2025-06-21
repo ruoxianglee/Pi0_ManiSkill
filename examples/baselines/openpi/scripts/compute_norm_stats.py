@@ -31,8 +31,6 @@ def create_dataset(config: _config.TrainConfig) -> tuple[_config.DataConfig, _da
         [
             *data_config.repack_transforms.inputs,
             *data_config.data_transforms.inputs,
-            # Apply model transforms that affect data shape (like padding) but exclude tokenization
-            *[t for t in data_config.model_transforms.inputs if not isinstance(t, (transforms.TokenizePrompt, transforms.TokenizeFASTInputs))],
             # Remove strings since they are not supported by JAX and are not needed to compute norm stats.
             RemoveStrings(),
         ],
