@@ -191,11 +191,9 @@ def populate_dataset(
                     # Add images if available
                     for camera, img_array in imgs_per_cam.items():
                         if camera == "base_camera":
-                            frame["image"] = img_array[i]
-                            print(frame["image"].shape)
+                            frame["image"] = img_array[i] # 128*128*3
                         elif camera == "hand_camera":
-                            frame["wrist_image"] = img_array[i]
-                            print(frame["wrist_image"].shape)
+                            frame["wrist_image"] = img_array[i] # 128*128*3
 
                     dataset.add_frame(frame)
 
