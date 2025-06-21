@@ -300,11 +300,11 @@ def eval_maniskill(args: Args) -> None:
                 print(f"Debug - img shape: {img.shape}, dtype: {img.dtype}")
                 print(f"Debug - wrist_img shape: {wrist_img.shape}, dtype: {wrist_img.dtype}")
                 
-                img = image_tools.convert_to_uint8(
-                    image_tools.resize_with_pad(img, args.resize_size, args.resize_size)
+                img = image_tools.convert_to_uint8(img
+                    # image_tools.resize_with_pad(img, args.resize_size, args.resize_size)
                 )
-                wrist_img = image_tools.convert_to_uint8(
-                    image_tools.resize_with_pad(wrist_img, args.resize_size, args.resize_size)
+                wrist_img = image_tools.convert_to_uint8(wrist_img
+                    # image_tools.resize_with_pad(wrist_img, args.resize_size, args.resize_size)
                 )
                 
                 # Debug: Print processed image shapes
