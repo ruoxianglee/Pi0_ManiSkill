@@ -8,6 +8,7 @@ to the config assets directory.
 import numpy as np
 import tqdm
 import tyro
+import jax
 
 import openpi.shared.normalize as normalize
 import openpi.training.config as _config
@@ -48,12 +49,20 @@ def main(config_name: str, max_frames: int | None = None):
         num_frames = max_frames
         shuffle = True
 
+    # Create a single device sharding for compute_norm_stats to avoid JAX sharding issues
+    # since we're using local_batch_size=1 which doesn't match the default data parallel sharding
+    single_device_sharding = jax.sharding.NamedSharding(
+        jax.sharding.Mesh(jax.devices()[:1], ("B",)),
+        jax.sharding.PartitionSpec(),
+    )
+
     data_loader = _data_loader.TorchDataLoader(
         dataset,
         local_batch_size=1,
         num_workers=8,
         shuffle=shuffle,
         num_batches=num_frames,
+        sharding=single_device_sharding,
     )
 
     keys = ["state", "actions"]
